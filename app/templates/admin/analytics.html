@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Pool Analytics</h2>
+
+<div class="card">
+
+<p>Total Pool Value: ₹{{ stats.total_value }}</p>
+<p>Claimed Value: ₹{{ stats.claimed_value }}</p>
+<p>Expired Value: ₹{{ stats.expired_value }}</p>
+<p>Remaining Liability: ₹{{ stats.remaining_liability }}</p>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>My Claims</h2>
+
+{% if claims|length == 0 %}
+
+<p>No cashback claims yet.</p>
+
+{% else %}
+
+{% for claim in claims %}
+<div class="card">
+
+<h3>{{ claim.title }}</h3>
+<p>₹{{ claim.amount }}</p>
+<p>{{ claim.claimed_at }}</p>
+
+</div>
+{% endfor %}
+
+{% endif %}
+
+
+{% endblock %}

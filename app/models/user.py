@@ -17,8 +17,16 @@ class User(db.Model):
         index=True
     )
 
+    # 🔐 Password hash (bcrypt stored)
     password_hash = db.Column(
         db.Text,
+        nullable=False
+    )
+
+    # 🎭 RBAC role
+    role = db.Column(
+        db.String(50),
+        default="USER",
         nullable=False
     )
 
@@ -27,7 +35,7 @@ class User(db.Model):
         default=datetime.utcnow
     )
 
-    # Relationship → claims ledger
+    # 📜 Ledger relationship
     claims = db.relationship(
         "CashbackClaimLedger",
         backref="user",

@@ -1,0 +1,33 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Cashback Assets</h2>
+
+{% for asset in assets %}
+<div class="card">
+
+    <h3>{{ asset.title }}</h3>
+
+    <p>Value: ₹{{ asset.total_value }}</p>
+
+    <p>Status:
+        {% if asset.status == "AVAILABLE" %}
+            <span class="available">Available</span>
+        {% elif asset.status == "CLAIMED" %}
+            <span class="claimed">Claimed</span>
+        {% else %}
+            <span class="expired">Expired</span>
+        {% endif %}
+    </p>
+
+    {% if asset.status == "AVAILABLE" %}
+        <button onclick="claimAsset({{ asset.id }})">
+            Claim
+        </button>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+{% endblock %}

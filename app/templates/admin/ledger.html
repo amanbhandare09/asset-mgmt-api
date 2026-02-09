@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Claims Ledger</h2>
+
+<table>
+
+<tr>
+<th>Asset</th>
+<th>User</th>
+<th>Amount</th>
+<th>Claimed At</th>
+</tr>
+
+{% for row in ledger %}
+<tr>
+<td>{{ row.asset }}</td>
+<td>{{ row.claimed_by }}</td>
+<td>₹{{ row.amount }}</td>
+<td>{{ row.claimed_at }}</td>
+</tr>
+{% endfor %}
+
+{% if ledger|length == 0 %}
+
+<p>No claims recorded yet.</p>
+
+{% else %}
+
+<table>
+<tr>
+<th>Asset</th>
+<th>User</th>
+<th>Amount</th>
+<th>Time</th>
+</tr>
+
+{% for row in ledger %}
+<tr>
+<td>{{ row.asset }}</td>
+<td>{{ row.claimed_by }}</td>
+<td>{{ row.amount }}</td>
+<td>{{ row.claimed_at }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endif %}
+
+
+{% endblock %}

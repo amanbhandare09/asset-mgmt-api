@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Pool Statistics</h2>
+
+<div class="card">
+    <p>Total Assets: {{ stats.total_assets }}</p>
+    <p>Available: {{ stats.available_assets }}</p>
+    <p>Claimed: {{ stats.claimed_assets }}</p>
+    <p>Total Value: ₹{{ stats.total_pool_value }}</p>
+    <p>Remaining Value: ₹{{ stats.remaining_value }}</p>
+</div>
+
+{% endblock %}
