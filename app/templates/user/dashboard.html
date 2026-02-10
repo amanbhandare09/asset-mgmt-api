@@ -2,32 +2,44 @@
 
 {% block content %}
 
-<h2>Cashback Assets</h2>
+<div class="wallet-card">
 
-{% for asset in assets %}
-<div class="card">
-
-    <h3>{{ asset.title }}</h3>
-
-    <p>Value: ₹{{ asset.total_value }}</p>
-
-    <p>Status:
-        {% if asset.status == "AVAILABLE" %}
-            <span class="available">Available</span>
-        {% elif asset.status == "CLAIMED" %}
-            <span class="claimed">Claimed</span>
-        {% else %}
-            <span class="expired">Expired</span>
-        {% endif %}
-    </p>
-
-    {% if asset.status == "AVAILABLE" %}
-        <button onclick="claimAsset({{ asset.id }})">
-            Claim
-        </button>
-    {% endif %}
+<h2>Wallet Balance</h2>
+<h1>₹{{ balance }}</h1>
 
 </div>
+
+<h2>Available Cashback Assets</h2>
+
+{% if assets|length == 0 %}
+<p>No cashback assets available.</p>
+{% endif %}
+
+<div class="card-grid">
+
+{% for asset in assets %}
+
+<div class="asset-card">
+
+<h3>{{ asset.title }}</h3>
+
+<p class="asset-value">
+₹{{ asset.total_value }}
+</p>
+
+<p>Status: {{ asset.status }}</p>
+
+{% if asset.status == "AVAILABLE" %}
+<button class="btn-primary"
+onclick="claimAsset({{ asset.id }})">
+Claim
+</button>
+{% endif %}
+
+</div>
+
 {% endfor %}
+
+</div>
 
 {% endblock %}

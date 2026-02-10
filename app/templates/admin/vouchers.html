@@ -1,0 +1,31 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<h2>Voucher Ownership</h2>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Voucher</th>
+<th>Value</th>
+<th>Status</th>
+<th>Claimed By</th>
+</tr>
+
+{% for v in vouchers %}
+
+<tr>
+<td>{{ v.id }}</td>
+<td>{{ v.title }}</td>
+<td>₹{{ v.value }}</td>
+<td>{{ v.status }}</td>
+<td>{{ v.claimed_by }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

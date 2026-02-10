@@ -1,10 +1,13 @@
-from flask import Blueprint, request, render_template, session
+from flask import Blueprint, request, render_template
 from app.extensions import db
 from app.models.cashback_asset import CashbackAsset
 from app.models.claim_ledger import CashbackClaimLedger
 from app.models.user import User
 from app.middleware.session_guard import login_required
 from app.middleware.rbac import admin_required
+from datetime import datetime
+from flask import redirect, url_for
+
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -14,19 +17,11 @@ admin_bp = Blueprint("admin", __name__)
 @admin_required
 def admin_dashboard():
 
+    assets = CashbackAsset.query.all()
+
     return render_template(
         "admin/dashboard.html",
-        role=session.get("role")
-    )
-
-@admin_bp.route("/create-asset")
-@login_required
-@admin_required
-def create_asset_page():
-
-    return render_template(
-        "admin/create_asset.html",
-        role=session.get("role")
+        assets=assets
     )
 
 @admin_bp.route("/assets/create", methods=["POST"])
@@ -36,21 +31,66 @@ def create_asset():
 
     data = request.get_json()
 
-    title = data.get("title")
-    value = data.get("value")
-
-    if not title or not value:
-        return {"error": "Missing title or value"}, 400
+    if not data:
+        return {"error": "No data"}, 400
 
     asset = CashbackAsset(
-        title=title,
-        total_value=value
+        title=data["title"],
+        total_value=data["value"],
+        status="AVAILABLE"
     )
 
     db.session.add(asset)
     db.session.commit()
 
     return {"message": "Asset created successfully"}
+
+@admin_bp.route("/assets/<int:asset_id>/update", methods=["PATCH"])
+@login_required
+@admin_required
+def update_asset(asset_id):
+
+    asset = CashbackAsset.query.get(asset_id)
+
+    if not asset:
+        return {"error": "Asset not found"}, 404
+
+    if asset.status == "CLAIMED":
+        return {
+            "error": "Cannot edit claimed asset"
+        }, 400
+
+    data = request.get_json()
+
+    asset.title = data.get("title", asset.title)
+    asset.total_value = data.get(
+        "value",
+        asset.total_value
+    )
+
+    db.session.commit()
+
+    return {"message": "Updated successfully"}
+
+@admin_bp.route("/assets/<int:asset_id>/delete", methods=["DELETE"])
+@login_required
+@admin_required
+def delete_asset(asset_id):
+
+    asset = CashbackAsset.query.get(asset_id)
+
+    if not asset:
+        return {"error": "Asset not found"}, 404
+
+    if asset.status == "CLAIMED":
+        return {
+            "error": "Cannot delete claimed asset"
+        }, 400
+
+    db.session.delete(asset)
+    db.session.commit()
+
+    return {"message": "Deleted successfully"}
 
 @admin_bp.route("/assets/<int:asset_id>/expire", methods=["PATCH"])
 @login_required
@@ -63,141 +103,142 @@ def expire_asset(asset_id):
         return {"error": "Asset not found"}, 404
 
     if asset.status == "CLAIMED":
-        return {
-            "error": "Cannot expire a claimed asset"
-        }, 400
+        return {"error": "Already claimed"}, 400
 
     asset.status = "EXPIRED"
     db.session.commit()
 
-    return {"message": "Asset expired successfully"}
+    return {"message": "Expired successfully"}
 
-@admin_bp.route("/ledger", methods=["GET"])
+@admin_bp.route("/assets/<int:asset_id>/recreate", methods=["POST"])
 @login_required
 @admin_required
-def view_ledger():
+def recreate_asset(asset_id):
 
-    claims = (
+    old_asset = CashbackAsset.query.get(asset_id)
+
+    if not old_asset:
+        return {"error": "Asset not found"}, 404
+
+    if old_asset.status != "EXPIRED":
+        return {
+            "error": "Only expired assets can be recreated"
+        }, 400
+
+    data = request.get_json()
+
+    new_asset = CashbackAsset(
+        title=data.get("title", old_asset.title),
+        total_value=data.get(
+            "value",
+            old_asset.total_value
+        ),
+        status="AVAILABLE"
+    )
+
+    db.session.add(new_asset)
+    db.session.commit()
+
+    return {"message": "Asset recreated successfully"}
+
+@admin_bp.route("/vouchers")
+@login_required
+@admin_required
+def vouchers():
+
+    data = (
         db.session.query(
-            CashbackClaimLedger,
             CashbackAsset,
             User
         )
-        .join(
-            CashbackAsset,
-            CashbackClaimLedger.asset_id == CashbackAsset.id
-        )
-        .join(
+        .outerjoin(
             User,
-            CashbackClaimLedger.user_id == User.id
+            CashbackAsset.claimed_by == User.id
         )
         .all()
     )
 
     result = []
 
-    for ledger, asset, user in claims:
+    for asset, user in data:
         result.append({
-            "asset": asset.title,
-            "claimed_by": user.email,
-            "amount": float(ledger.amount),
-            "claimed_at": ledger.claimed_at
+            "id": asset.id,
+            "title": asset.title,
+            "value": float(asset.total_value),
+            "status": asset.status,
+            "claimed_by": user.email if user else "—"
         })
 
-    return {"ledger": result}
+    return render_template(
+        "admin/vouchers.html",
+        vouchers=result
+    )
 
-
-@admin_bp.route("/ledger-page")
+@admin_bp.route("/assets/new", methods=["GET", "POST"])
 @login_required
 @admin_required
-def ledger_page():
+def new_asset():
 
-    claims = (
-        db.session.query(
-            CashbackClaimLedger,
-            CashbackAsset,
-            User
+    if request.method == "POST":
+
+        title = request.form["title"]
+        value = request.form["value"]
+        expires_at = request.form.get("expires_at")
+
+        expiry_dt = (
+            datetime.fromisoformat(expires_at)
+            if expires_at else None
         )
-        .join(CashbackAsset)
-        .join(User)
-        .all()
-    )
 
-    ledger_data = []
+        asset = CashbackAsset(
+            title=title,
+            total_value=value,
+            expires_at=expiry_dt,
+            status="AVAILABLE"
+        )
 
-    for ledger, asset, user in claims:
-        ledger_data.append({
-            "asset": asset.title,
-            "claimed_by": user.email,
-            "amount": float(ledger.amount),
-            "claimed_at": ledger.claimed_at
-        })
+        db.session.add(asset)
+        db.session.commit()
+
+        return redirect(url_for("admin.admin_dashboard"))
 
     return render_template(
-        "admin/ledger.html",
-        ledger=ledger_data,
-        role=session.get("role")
+        "admin/asset_form.html",
+        asset=None
     )
 
-
-@admin_bp.route("/analytics", methods=["GET"])
+@admin_bp.route(
+    "/assets/<int:asset_id>/edit",
+    methods=["GET", "POST"]
+)
 @login_required
 @admin_required
-def pool_analytics():
+def edit_asset_page(asset_id):
 
-    total_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).scalar() or 0
+    asset = CashbackAsset.query.get_or_404(asset_id)
 
-    claimed_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).filter(
-        CashbackAsset.status == "CLAIMED"
-    ).scalar() or 0
+    if asset.status == "CLAIMED":
+        return "Cannot edit claimed asset", 400
 
-    expired_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).filter(
-        CashbackAsset.status == "EXPIRED"
-    ).scalar() or 0
+    if request.method == "POST":
 
-    return {
-        "total_value": float(total_value),
-        "claimed_value": float(claimed_value),
-        "expired_value": float(expired_value),
-        "remaining_liability": float(total_value - claimed_value)
-    }
+        asset.title = request.form["title"]
+        asset.total_value = request.form["value"]
 
-@admin_bp.route("/analytics-page")
-@login_required
-@admin_required
-def analytics_page():
+        expires_at = request.form.get("expires_at")
 
-    total_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).scalar() or 0
+        asset.expires_at = (
+            datetime.fromisoformat(expires_at)
+            if expires_at else None
+        )
 
-    claimed_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).filter(
-        CashbackAsset.status == "CLAIMED"
-    ).scalar() or 0
+        db.session.commit()
 
-    expired_value = db.session.query(
-        db.func.sum(CashbackAsset.total_value)
-    ).filter(
-        CashbackAsset.status == "EXPIRED"
-    ).scalar() or 0
-
-    stats = {
-        "total_value": float(total_value),
-        "claimed_value": float(claimed_value),
-        "expired_value": float(expired_value),
-        "remaining_liability": float(total_value - claimed_value)
-    }
+        return redirect(url_for("admin.admin_dashboard"))
 
     return render_template(
-        "admin/analytics.html",
-        stats=stats,
-        role=session.get("role")
+        "admin/asset_form.html",
+        asset=asset
     )
+
+

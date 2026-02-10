@@ -106,11 +106,113 @@ if (assetForm) {
 }
 
 function logout(){
-
     fetch("/auth/logout");
-
     localStorage.clear();
-
     window.location.href="/";
 }
+
+/* ================================
+   ADMIN ASSET MANAGEMENT
+================================ */
+
+/* CREATE ASSET */
+
+function openCreateModal(){
+
+const title = prompt("Enter asset title:");
+const value = prompt("Enter asset value:");
+
+if(!title || !value){
+alert("All fields required");
+return;
+}
+
+fetch("/admin/assets/create",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+title:title,
+value:value
+})
+})
+.then(res=>res.json())
+.then(()=>{
+alert("Asset created");
+location.reload();
+});
+}
+
+
+/* UPDATE */
+
+function editAsset(id,title,value){
+
+const newTitle = prompt("Title:",title);
+const newValue = prompt("Value:",value);
+
+fetch(`/admin/assets/${id}/update`,{
+method:"PATCH",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+title:newTitle,
+value:newValue
+})
+})
+.then(()=>location.reload());
+}
+
+
+/* DELETE */
+
+function deleteAsset(id){
+
+if(!confirm("Delete this asset?")) return;
+
+fetch(`/admin/assets/${id}/delete`,{
+method:"DELETE"
+})
+.then(()=>location.reload());
+}
+
+
+/* EXPIRE */
+
+function expireAsset(id){
+
+fetch(`/admin/assets/${id}/expire`,{
+method:"PATCH"
+})
+.then(()=>location.reload());
+}
+
+
+/* RECREATE */
+
+function recreateAsset(id,title,value){
+
+const newTitle = prompt("New title:",title);
+const newValue = prompt("New value:",value);
+
+fetch(`/admin/assets/${id}/recreate`,{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+title:newTitle,
+value:newValue
+})
+})
+.then(()=>{
+alert("Recreated");
+location.reload();
+});
+}
+
+
+
 

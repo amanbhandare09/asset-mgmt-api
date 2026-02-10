@@ -1,47 +1,173 @@
-body {
-    font-family: Arial;
-    background: #f4f6f8;
-    margin: 0;
+/* ---------- GLOBAL ---------- */
+
+body{
+font-family: "Segoe UI", sans-serif;
+margin:0;
+background:#f4f6f8;
+color:#111827;
 }
 
-.navbar {
-    background: #1f2937;
-    padding: 15px;
+.page-wrapper{
+max-width:1200px;
+margin:40px auto;
+padding:0 20px;
 }
 
-.navbar a {
-    color: white;
-    margin-right: 20px;
-    text-decoration: none;
+/* ---------- NAVBAR ---------- */
+
+.navbar{
+background:#111827;
+padding:15px 30px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 2px 6px rgba(0,0,0,0.2);
 }
 
-.container {
-    padding: 30px;
+.nav-left a,
+.nav-right a{
+color:white;
+margin-right:20px;
+text-decoration:none;
+font-weight:500;
 }
 
-.card {
-    background: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.user-email{
+color:#9ca3af;
+margin-right:15px;
 }
 
-.available { color: green; }
-.claimed { color: red; }
-.expired { color: gray; }
+/* ---------- HEADERS ---------- */
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+.page-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:30px;
 }
 
-th, td {
-    padding: 10px;
-    border: 1px solid #ccc;
+/* ---------- GRID ---------- */
+
+.card-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+gap:25px;
 }
 
-.center-box {
-    text-align: center;
-    margin-top: 150px;
+/* ---------- CARDS ---------- */
+
+.asset-card{
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 4px 14px rgba(0,0,0,0.08);
+transition:0.2s;
+}
+
+.asset-card:hover{
+transform:translateY(-3px);
+box-shadow:0 8px 22px rgba(0,0,0,0.12);
+}
+
+.asset-value{
+font-size:22px;
+font-weight:600;
+margin:10px 0;
+}
+
+.asset-status{
+color:#6b7280;
+}
+
+/* ---------- WALLET ---------- */
+
+.wallet-card{
+background:linear-gradient(135deg,#6366f1,#8b5cf6);
+color:white;
+padding:30px;
+border-radius:16px;
+margin-bottom:40px;
+box-shadow:0 8px 24px rgba(0,0,0,0.2);
+}
+
+/* ---------- BUTTONS ---------- */
+
+button{
+border:none;
+padding:8px 16px;
+border-radius:8px;
+cursor:pointer;
+font-weight:500;
+}
+
+/* Primary */
+
+.btn-primary{
+background:#6366f1;
+color:white;
+}
+
+.btn-primary:hover{
+background:#4f46e5;
+}
+
+/* Secondary */
+
+.btn-secondary{
+background:#e5e7eb;
+}
+
+/* Danger */
+
+.btn-danger{
+background:#ef4444;
+color:white;
+}
+
+.btn-danger:hover{
+background:#dc2626;
+}
+
+.btn-warning{
+background:#f59e0b;
+color:white;
+}
+
+.btn-warning:hover{
+background:#d97706;
+}
+
+.btn-logout{
+background:#374151;
+color:white;
+}
+
+.action-group{
+margin-top:15px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.form-container{
+max-width:500px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+.form-container label{
+display:block;
+margin-top:15px;
+font-weight:500;
+}
+
+.form-container input{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #d1d5db;
+border-radius:8px;
 }

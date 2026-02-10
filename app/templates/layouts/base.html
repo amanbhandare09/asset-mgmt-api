@@ -9,21 +9,52 @@
 
 <body>
 
+<!-- NAVBAR -->
+
 <div class="navbar">
 
+<div class="nav-left">
+
 <a href="/">Home</a>
+
+{% if logged_in and role == "USER" %}
 <a href="/cashback/dashboard">Dashboard</a>
 <a href="/cashback/claims">My Claims</a>
-
-{% if role == "ADMIN" %}
-<a href="/admin/">Admin</a>
 {% endif %}
 
-<a href="#" onclick="logout()">Logout</a>
+{% if logged_in and role == "ADMIN" %}
+<a href="/admin/">Console</a>
+<a href="/admin/vouchers">Vouchers</a>
+{% endif %}
 
 </div>
 
-<div class="container">
+<div class="nav-right">
+
+{% if logged_in %}
+
+<span class="user-email">
+{{ email }}
+</span>
+
+<button class="btn-logout" onclick="logout()">
+Logout
+</button>
+
+{% else %}
+
+<a href="/auth/login-page">Login</a>
+<a href="/auth/register-page">Register</a>
+
+{% endif %}
+
+</div>
+
+</div>
+
+<!-- CONTENT WRAPPER -->
+
+<div class="page-wrapper">
 {% block content %}{% endblock %}
 </div>
 

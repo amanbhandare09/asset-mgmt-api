@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<div class="form-container">
+
+<h2>
+{% if asset %}
+Update Asset
+{% else %}
+Create Asset
+{% endif %}
+</h2>
+
+<form method="POST">
+
+<label>Title</label>
+<input
+type="text"
+name="title"
+value="{{ asset.title if asset else '' }}"
+required
+>
+
+<label>Value</label>
+<input
+type="number"
+name="value"
+step="0.01"
+value="{{ asset.total_value if asset else '' }}"
+required
+>
+
+<label>Expiry Date</label>
+<input
+type="datetime-local"
+name="expires_at"
+value="{{ asset.expires_at|datetime_local if asset and asset.expires_at else '' }}"
+>
+
+<button class="btn-primary">
+{% if asset %}
+Update Asset
+{% else %}
+Create Asset
+{% endif %}
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

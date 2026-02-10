@@ -2,18 +2,86 @@
 
 {% block content %}
 
-<h2>Admin Console</h2>
+<div class="page-header">
 
-<div class="card">
-    <a href="/admin/create-asset">Create Cashback Asset</a>
+<h2>Asset Management</h2>
+
+<a href="/admin/assets/new"
+class="btn-primary btn-lg">
++ Create Asset
+</a>
+
 </div>
 
-<div class="card">
-    <a href="/admin/ledger-page">View Claims Ledger</a>
+<div class="card-grid">
+
+{% for asset in assets %}
+
+<div class="asset-card">
+
+<h3>{{ asset.title }}</h3>
+
+<p class="asset-value">
+₹{{ asset.total_value }}
+</p>
+
+<p>Status: {{ asset.status }}</p>
+
+<div class="action-group">
+
+<!-- AVAILABLE -->
+
+{% if asset.status == "AVAILABLE" %}
+
+<a href="/admin/assets/{{ asset.id }}/edit"
+class="btn-secondary btn-lg">
+Edit
+</a>
+
+
+<button class="btn-danger"
+onclick="deleteAsset({{ asset.id }})">
+Delete
+</button>
+
+<button class="btn-warning"
+onclick="expireAsset({{ asset.id }})">
+Expire
+</button>
+
+{% endif %}
+
+<!-- EXPIRED -->
+
+{% if asset.status == "EXPIRED" %}
+
+<button class="btn-secondary"
+onclick="recreateAsset(
+{{ asset.id }},
+'{{ asset.title }}',
+{{ asset.total_value }}
+)">
+Recreate
+</button>
+
+{% endif %}
+
+<!-- CLAIMED -->
+
+{% if asset.status == "CLAIMED" %}
+
+<p style="color:#9ca3af;">
+Claimed — locked
+</p>
+
+{% endif %}
+
 </div>
 
-<div class="card">
-    <a href="/admin/analytics-page">Pool Analytics</a>
+</div>
+
+{% endfor %}
+
 </div>
 
 {% endblock %}

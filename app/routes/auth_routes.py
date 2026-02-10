@@ -44,19 +44,18 @@ def login():
     ):
         return {"error": "Invalid credentials"}, 401
 
-    # JWT for APIs
-    token = create_access_token(
-        identity=str(user.id)
-    )
+    token = create_access_token(identity=str(user.id))
 
-    # SESSION for UI
+    # SESSION BRIDGE
     session["user_id"] = user.id
     session["role"] = user.role
+    session["email"] = user.email   # ← NEW
 
     return {
         "access_token": token,
         "role": user.role
     }
+
 
 @auth_bp.route("/logout")
 def logout():
